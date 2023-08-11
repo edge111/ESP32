@@ -39,12 +39,13 @@
 static const char *TAG = "example_lvgl";
 
 static spi_bus_handle_t board_spi_bus_init(void)
-{
+{ 
+    /*spi总线初始化参数*/
     spi_config_t bus_conf = {
-        .miso_io_num = -1,
-        .mosi_io_num = 13,
-        .sclk_io_num = 14,
-        .max_transfer_sz = 51200,
+        .miso_io_num = -1, //主输入从输出 (=spi_q) 信号的 GPIO 引脚，如果不使用则为 -1
+        .mosi_io_num = 13, //用于主输出从输入 (=spi_d) 信号的 GPIO 引脚，如果不使用则为 -1
+        .sclk_io_num = 14, //SPI CLock 信号的 GPIO 引脚，如果不使用则为 -1
+        .max_transfer_sz = 51200, //可发送的最大字节长度，如果< 4096，将设置4096
     };
     spi_bus_handle_t spi_bus_handle = spi_bus_create(SPI2_HOST, &bus_conf);
     ESP_LOGI(TAG, "spi2 bus create succeed");
@@ -70,18 +71,19 @@ void app_main()
 
     scr_interface_driver_t *iface_drv;
     scr_interface_create(SCREEN_IFACE_SPI, &spi_lcd_cfg, &iface_drv);
-
+     
+    //屏幕控制器的配置
     scr_controller_config_t lcd_cfg = {
-        .interface_drv = iface_drv,
-        .pin_num_rst = 27,
-        .pin_num_bckl = 26,
-        .rst_active_level = 0,
-        .bckl_active_level = 1,
-        .offset_hor = 0,
-        .offset_ver = 0,
-        .width = 240,
-        .height = 240,
-        .rotate = SCR_DIR_LRTB,
+        .interface_drv = iface_drv,//屏幕接口驱动
+        .pin_num_rst = 27,//固定到硬重置 LCD
+        .pin_num_bckl = 26,//控制背光引脚
+        .rst_active_level = 0,//复位引脚有效电平
+        .bckl_active_level = 1,//背光激活级别
+        .offset_hor = 0,//水平偏移
+        .offset_ver = 0,//垂直偏移
+        .width = 240,//宽
+        .height = 240,//高
+        .rotate = SCR_DIR_LRTB,屏幕旋转方向
     };
     scr_find_driver(SCREEN_CONTROLLER_ST7789, &lcd_drv);
     lcd_drv.init(&lcd_cfg);
